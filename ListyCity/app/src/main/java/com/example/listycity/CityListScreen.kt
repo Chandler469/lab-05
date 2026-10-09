@@ -1,5 +1,6 @@
 package com.example.listycity
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +33,7 @@ import com.example.listycity.ui.theme.ListyCityTheme
 fun CityListScreen(
     cities: List<City>,
     onAddCity: (City) -> Unit,
+    onDeleteCity: (City) -> Unit,
     onUpdateCity: (City, City) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -83,24 +86,28 @@ fun CityListScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Button(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    onClick = {
-                        if (newCityName.isNotBlank() && newProvinceName.isNotBlank()) {
-                            onAddCity(
-                                City(
-                                    name = newCityName,
-                                    province = newProvinceName
-                                )
-                            )
-
-                            newCityName = ""
-                            newProvinceName = ""
-                            showAddCityFields = false
-                        }
-                    }
+                Column(
+                    modifier = Modifier
                 ) {
-                    Text("ADD CITY")
+                    Button(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        onClick = {
+                            if (newCityName.isNotBlank() && newProvinceName.isNotBlank()) {
+                                onAddCity(
+                                    City(
+                                        name = newCityName,
+                                        province = newProvinceName
+                                    )
+                                )
+
+                                newCityName = ""
+                                newProvinceName = ""
+                                showAddCityFields = false
+                            }
+                        }
+                    ) {
+                        Text("ADD CITY")
+                    }
                 }
             }
         }
@@ -128,30 +135,54 @@ fun CityListScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Button(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    onClick = {
-                        val cityToUpdate = selectedCity
-                        if (
-                            cityToUpdate != null &&
-                            editedCityName.isNotBlank() &&
-                            editedProvinceName.isNotBlank()
-                        ) {
-                            onUpdateCity(
-                                cityToUpdate,
-                                City(
-                                    name = editedCityName,
-                                    province = editedProvinceName
-                                )
-                            )
-
-                            selectedCity = null
-                            editedCityName = ""
-                            editedProvinceName = ""
-                        }
-                    }
+                Column(
+                    modifier = Modifier
                 ) {
-                    Text("UPDATE CITY")
+                    Button(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        onClick = {
+                            val cityToUpdate = selectedCity
+                            if (
+                                cityToUpdate != null &&
+                                editedCityName.isNotBlank() &&
+                                editedProvinceName.isNotBlank()
+                            ) {
+                                onUpdateCity(
+                                    cityToUpdate,
+                                    City(
+                                        name = editedCityName,
+                                        province = editedProvinceName
+                                    )
+                                )
+
+                                selectedCity = null
+                                editedCityName = ""
+                                editedProvinceName = ""
+                            }
+                        }
+                    ) {
+                        Text("UPDATE CITY")
+                    }
+                    Button(
+                        modifier = Modifier,
+                        onClick = {
+                            if (selectedCity != null) {
+                                selectedCity?.let { selectedCity ->
+                                    onDeleteCity(
+                                        City(
+                                            name = selectedCity.name,
+                                            province = selectedCity.province
+                                        )
+                                    )
+                                }
+                                selectedCity = null
+                                editedCityName = ""
+                                editedProvinceName = ""
+                            }
+                        }
+                    ) {
+                        Text("DELETE CITY")
+                    }
                 }
             }
         }
@@ -159,6 +190,7 @@ fun CityListScreen(
             itemsIndexed(cities) { index, city ->
                 CityRow(
                     city = city,
+                    selectedCity = selectedCity,
                     onClick = {
                         showAddCityFields = false
                         newCityName = ""
@@ -180,6 +212,7 @@ fun CityListScreen(
 @Composable
 fun CityRow(
     city: City,
+    selectedCity: City?,
     onClick: () -> Unit
 ) {
     Row(
@@ -187,6 +220,11 @@ fun CityRow(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp)
+            .background(if (selectedCity == city) {
+                Color(0xFF9E9E9E)
+            } else {
+                Color(0xFFFFFFFF)
+            })
     ) {
         Text(
             text = city.name,
@@ -213,6 +251,7 @@ fun CityListScreenPreview() {
                 City("Calgary", "AB")
             ),
             onAddCity = {},
+            onDeleteCity = {},
             onUpdateCity = { _, _ -> }
         )
     }
